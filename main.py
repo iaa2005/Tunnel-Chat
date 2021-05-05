@@ -93,10 +93,12 @@ labelTunnel.place(x=10, y=105)
 EntryChatID = tk.Entry(bd=0, highlightthickness=2, highlightbackground="white")
 EntryChatID.place(x=15, y=137)
 
-
 def connect():
-    pass
-
+    global CHAT_ID
+    if CHAT_ID == "":
+        CHAT_ID = EntryChatID.get()
+        ChatIDText.configure(text=CHAT_ID)
+    input_user.set("")
 
 connectBtn = tk.Button(text="Connect", width=10, command=connect)
 connectBtn.place(x=220, y=137)
@@ -198,7 +200,7 @@ def check_updates():
                     elif type == "file":
                         pass
             else:
-                newchat =  dweepy.get_dweets_for(CHAT_ID)
+                newchat = dweepy.get_dweets_for(CHAT_ID)
                 for newdweet in newchat:
                     newdate = newdweet["created"]
                     checkIS = False
@@ -221,7 +223,7 @@ def check_updates():
                             textCons.see(tk.END)
                         elif type == "file":
                             pass
-            CHAT = newchat
+                CHAT = newchat
         except Exception as e:
             print(e)
         time.sleep(5)
