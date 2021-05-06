@@ -267,13 +267,11 @@ def check_updates():
                             data = str(data)[1:]
                             data = bytes.fromhex(data).decode("utf-8")
                             text_cons = newdate[12:17] + " " + username + ": " + data
-                            print(text_cons)
                             textCons.config(state=tk.NORMAL)
                             textCons.insert(tk.END, text_cons + "\n")
                             textCons.config(state=tk.DISABLED)
                             textCons.see(tk.END)
                         elif type == "file":
-                            print("new file")
                             text_cons = newdate[12:17] + " " + username + ": sent file "
                             for index in range(1, int(newdweet["content"]["data"]["value"]) + 1, 1):
                                 filename = newdweet["content"]["data"][str(index)]["name"]
