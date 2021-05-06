@@ -251,8 +251,8 @@ def check_updates():
                         textCons.see(tk.END)
             else:
                 newchat = dweepy.get_dweets_for(CHAT_ID)
-                print(newchat)
-                print('')
+                # print(newchat)
+                # print('')
                 for newdweet in newchat:
                     newdate = newdweet["created"]
                     checkIS = False
@@ -273,6 +273,7 @@ def check_updates():
                             textCons.config(state=tk.DISABLED)
                             textCons.see(tk.END)
                         elif type == "file":
+                            print("new file")
                             text_cons = newdate[12:17] + " " + username + ": sent file "
                             for index in int(newdweet["content"]["data"]["count"]):
                                 filename = newdweet["content"]["data"][str(index)]["name"]
