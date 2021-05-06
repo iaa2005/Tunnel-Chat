@@ -275,7 +275,7 @@ def check_updates():
                         elif type == "file":
                             print("new file")
                             text_cons = newdate[12:17] + " " + username + ": sent file "
-                            for index in range(1, int(newdweet["content"]["data"]["count"]) + 1, 1):
+                            for index in range(1, int(newdweet["content"]["data"]["value"]) + 1, 1):
                                 filename = newdweet["content"]["data"][str(index)]["name"]
                                 filename = bytes.fromhex(filename[1:]).decode("utf-8")
                                 if username != USERNAME:
