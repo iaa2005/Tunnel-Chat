@@ -177,9 +177,10 @@ def choose_file():
     filenames = filedialog.askopenfilenames(initialdir="/", title="Select a file",
                                             # filetype=(("All Files", "*.*"), ("jpeg", "*.jpeg"))
                                             )
-    count = 1
+    count = 0
     text_type_files = {}
     for file_name in filenames:
+        count += 1
         name, ext = os.path.splitext(file_name)
         name = ntpath.basename(file_name)
         text_type_files[str(count)] = {
@@ -187,7 +188,6 @@ def choose_file():
             "ext": "x" + binascii.hexlify(str(ext[1:]).encode("utf-8")).decode("utf-8"),
             "data": "x" + str(open(file_name, 'rb').read().hex())
         }
-        count += 1
 
     text_type_files["value"] = count
     
@@ -280,7 +280,7 @@ def check_updates():
                                 filename = bytes.fromhex(filename[1:]).decode("utf-8")
                                 if username != USERNAME:
                                     data = newdweet["content"]["data"][str(index)]["data"]
-                                    with open(filename, 'wb') as file_:
+                                    with open("files/" + filename, 'wb') as file_:
                                         file_.write(bytes.fromhex(data[1:]))
                                         file_.close()
                                 text_cons += " " + filename
