@@ -8,11 +8,13 @@ import string
 import dweepy
 import tkinter as tk
 import tkinter.font as tkFont
+from tkinter import filedialog
 import threading
 import binascii
-import requests
 import time
 from sys import platform
+import ntpath
+import os
 
 
 if platform == "linux" or platform == "linux2": # Linux
@@ -43,6 +45,9 @@ CHAT_ID = ""
 
 CHAT = []
 USERNAME = "alexivanov"
+CAN_SEND_FILE = False
+FILES = {}
+UPDATES_CHECK = True
 
 
 def send_msg(msg):
@@ -130,13 +135,13 @@ def get_history_chat():
                 type = msg["content"]["type"]
                 username = msg["content"]["username"]
                 if type == "file":
-                    filename = msg["content"]["filename"]
-                    fileext = msg["content"]["fileext"]
-                    text_cons = date + " " + username + ": sent file " + filename + "." + fileext
-                    textCons.config(state=tk.NORMAL)
-                    textCons.insert(tk.END, text_cons + "\n")
-                    textCons.config(state=tk.DISABLED)
-                    textCons.see(tk.END)
+                    for index in int(msg["content"]["data"]["count"]):
+                        filename = msg["content"]["data"][str(index)]["name"]
+                        text_cons = date + " " + username + ": sent file " + filename
+                        textCons.config(state=tk.NORMAL)
+                        textCons.insert(tk.END, text_cons + "\n")
+                        textCons.config(state=tk.DISABLED)
+                        textCons.see(tk.END)
                 elif type == "text":
                     data = msg["content"]["data"]
                     data = str(data)[1:]
@@ -163,12 +168,48 @@ def send_text():
     return "break"
 
 
-def send_file(file_path):
-    pass
+def send_files():
+    global CAN_SEND_FILE, FILES, CHAT_ID
+    if CAN_SEND_FILE == True and FILES != {} and CHAT_ID != "":
+        dweepy.dweet_for(CHAT_ID, {"username": USERNAME, "type": "file", "data": FILES})
+
+def choose_file():
+    filenames = filedialog.askopenfilenames(initialdir="/", title="Select a file",
+                                            filetype=(("All Files", "*.*"), ("jpeg", "*.jpeg")))
+    count = 1
+    text_type_files = {}
+    for file_name in filenames:
+        name, ext = os.path.splitext(file_name)
+        name = ntpath.basename(file_name)
+        text_type_files[str(count)] = {
+            "name": "x" + binascii.hexlify(str(name).encode("utf-8")).decode("utf-8"),
+            "ext": "x" + binascii.hexlify(str(ext[1:]).encode("utf-8")).decode("utf-8"),
+            "data": "x" + str(open(file_name, 'rb').read().hex())
+        }
+        count += 1
+
+    text_type_files["value"] = count
+    
+    if text_type_files != {}:
+        global CAN_SEND_FILE, FILES
+        FILES = text_type_files
+        CAN_SEND_FILE = True
+        # print filenames in program
+    else:
+        pass
+
+    # import pprint
+    # pprint.pprint(text_type_files)
 
 
-sendBtn = tk.Button(text="Send", width=6, command=send_text)
+sendBtn = tk.Button(text="Send", width=6, command=send_text, bd=0)
 sendBtn.place(x=325, y=587)
+
+chooseFile = tk.Button(text="Choose file", width=10, command=choose_file, bd=0)
+chooseFile.place(x=220, y=615)
+
+sendFileBtn = tk.Button(text="Send file", width=10, command=send_files, bd=0)
+sendFileBtn.place(x=305, y=615)
 
 
 def loop():
@@ -176,10 +217,10 @@ def loop():
 
 
 def check_updates():
-    global CHAT, CHAT_ID
-    while CHAT_ID == "":
+    global CHAT, CHAT_ID, UPDATES_CHECK
+    while CHAT_ID == "" and UPDATES_CHECK:
         pass
-    while True:
+    while UPDATES_CHECK:
         try:
             if CHAT == []:
                 CHAT = dweepy.get_dweets_for(CHAT_ID)
@@ -198,16 +239,25 @@ def check_updates():
                         textCons.config(state=tk.DISABLED)
                         textCons.see(tk.END)
                     elif type == "file":
-                        pass
+                        text_cons = newdate[12:17] + " " + username + ": sent file "
+                        for index in int(newdweet["content"]["data"]["count"]):
+                            filename = newdweet["content"]["data"][str(index)]["name"]
+                            filename = bytes.fromhex(filename[1:]).decode("utf-8")
+                            text_cons += " " + filename
+                        textCons.config(state=tk.NORMAL)
+                        textCons.insert(tk.END, text_cons + "\n")
+                        textCons.config(state=tk.DISABLED)
+                        textCons.see(tk.END)
             else:
                 newchat = dweepy.get_dweets_for(CHAT_ID)
+                print(newchat)
+                print('')
                 for newdweet in newchat:
                     newdate = newdweet["created"]
                     checkIS = False
                     for olddweet in CHAT:
                         if olddweet["created"] == newdate:
                             checkIS = True
-                            break
                     if checkIS == False:
                         type = olddweet["content"]["type"]
                         username = olddweet["content"]["username"]
@@ -222,7 +272,20 @@ def check_updates():
                             textCons.config(state=tk.DISABLED)
                             textCons.see(tk.END)
                         elif type == "file":
-                            pass
+                            text_cons = newdate[12:17] + " " + username + ": sent file "
+                            for index in int(newdweet["content"]["data"]["count"]):
+                                filename = newdweet["content"]["data"][str(index)]["name"]
+                                filename = bytes.fromhex(filename[1:]).decode("utf-8")
+                                if username != USERNAME:
+                                    data = newdweet["content"]["data"][str(index)]["data"]
+                                    with open(filename, 'wb') as file_:
+                                        file_.write(bytes.fromhex(data[1:]))
+                                        file_.close()
+                                text_cons += " " + filename
+                            textCons.config(state=tk.NORMAL)
+                            textCons.insert(tk.END, text_cons + "\n")
+                            textCons.config(state=tk.DISABLED)
+                            textCons.see(tk.END)
                 CHAT = newchat
         except Exception as e:
             print(e)
@@ -237,7 +300,8 @@ updates.start()
 
 def ask_quit():
     window.destroy()
-    updates._delete()
+    global UPDATES_CHECK
+    UPDATES_CHECK = False
     exit(0)
 
 window.protocol("WM_DELETE_WINDOW", ask_quit)
