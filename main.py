@@ -290,7 +290,9 @@ def check_updates():
                             textCons.see(tk.END)
                 CHAT = newchat
         except Exception as e:
-            print(e)
+            if str(e) == "Rate limit exceeded, try again in 1 second(s).":
+                print("delay 1 sec")
+                time.sleep(1.0)
         time.sleep(5)
         
 
