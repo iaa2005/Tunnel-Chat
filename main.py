@@ -278,6 +278,8 @@ def check_updates():
                                 filename = bytes.fromhex(filename[1:]).decode("utf-8")
                                 if username != USERNAME:
                                     data = newdweet["content"]["data"][str(index)]["data"]
+                                    if os.path.exists("files") == False:
+                                        os.mkdir("files")
                                     with open("files/" + filename, 'wb') as file_:
                                         file_.write(bytes.fromhex(data[1:]))
                                         file_.close()
