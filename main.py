@@ -175,7 +175,8 @@ def send_files():
 
 def choose_file():
     filenames = filedialog.askopenfilenames(initialdir="/", title="Select a file",
-                                            filetype=(("All Files", "*.*"), ("jpeg", "*.jpeg")))
+                                            # filetype=(("All Files", "*.*"), ("jpeg", "*.jpeg"))
+                                            )
     count = 1
     text_type_files = {}
     for file_name in filenames:
@@ -259,10 +260,10 @@ def check_updates():
                         if olddweet["created"] == newdate:
                             checkIS = True
                     if checkIS == False:
-                        type = olddweet["content"]["type"]
-                        username = olddweet["content"]["username"]
+                        type = newdweet["content"]["type"]
+                        username = newdweet["content"]["username"]
                         if type == "text":
-                            data = olddweet["content"]["data"]
+                            data = newdweet["content"]["data"]
                             data = str(data)[1:]
                             data = bytes.fromhex(data).decode("utf-8")
                             text_cons = newdate[12:17] + " " + username + ": " + data
